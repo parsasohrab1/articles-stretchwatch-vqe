@@ -15,5 +15,12 @@ Tests: `python -m pytest tests -q` (6 pass).
 The appendix proposes a synthetic Morse-model data generator. **It is not used**: those curves are invented, not physics. All results come from computed Hamiltonians (not measured data) and are labelled so.
 ## Results (results/example/*.csv, summary.json)
 Threshold at HF overlap 0.9: H2 about 2.63 bohr, LiH about 4.32 bohr, HeH+ never below 0.9 on the computed grid.
+## Validation against experimental reference data (real data)
+`python validate_reference.py` compares the computed exact STO-3G curves with NIST WebBook experimental constants (`data/nist_reference.json`, `results/validation_nist.json`):
+| molecule | r_e computed | r_e experiment | error |
+|---|---|---|---|
+| H2 | 0.735 A | 0.741 A | -0.8% |
+| LiH | 1.549 A | 1.596 A | -2.9% |
+H2 dissociation energy: computed 5.56 eV (STO-3G De at its minimum) vs experimental D0 4.48 eV (De about 4.75 eV): the minimal basis overbinds by roughly 17-24%, as expected from the STO-3G hydrogen-atom energy error. The check shows the physics is sane and the equilibrium geometry is within 3% of experiment; it does NOT validate the HF-overlap thresholds, for which no experimental measurement exists.
 ## Next steps
 Natural-orbital entropies, larger molecules (BeH2, H2O) and active spaces, bases beyond STO-3G, noise, plotting (FR in SRS: "draw curves"), CI check against an independent chemistry code (PySCF) when available, validation of the recommendation rule.

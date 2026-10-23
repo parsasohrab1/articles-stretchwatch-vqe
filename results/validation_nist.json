@@ -1,0 +1,16 @@
+{
+ "reference": "NIST Chemistry WebBook, constants of diatomic molecules (retrieved 2026-10-23)",
+ "H2": {
+  "r_e_computed_A": 0.7354463112749063,
+  "r_e_experiment_A": 0.74144,
+  "r_e_error_percent": -0.8083848625773715,
+  "D_computed_eV": 5.55602963742227,
+  "D0_experiment_eV": 4.4780985308600005,
+  "note": "computed D is De at the STO-3G minimum vs experimental D0 (zero-point energy ~0.27 eV not subtracted)"
+ },
+ "LiH": {
+  "r_e_computed_A": 1.5487316302927019,
+  "r_e_experiment_A": 1.5957,
+  "r_e_error_percent": -2.943433584464372
+ }
+}

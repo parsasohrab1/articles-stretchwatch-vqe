@@ -1,0 +1,5 @@
+{
+  "source": "NIST Chemistry WebBook, constants of diatomic molecules (retrieved 2026-10-23)",
+  "H2": {"r_e_angstrom": 0.74144, "D0_cm-1": 36118.3, "url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C1333740&Mask=1000"},
+  "LiH": {"r_e_angstrom": 1.5957, "url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C7580678&Mask=1000", "note": "ground-state D0/De not given on the page"}
+}
