@@ -1,0 +1,17 @@
+{
+  "H2": {
+    "hf_overlap_threshold": 0.9,
+    "threshold_R_bohr": 2.6324187040002434,
+    "n_points": 9
+  },
+  "HeH+": {
+    "hf_overlap_threshold": 0.9,
+    "threshold_R_bohr": null,
+    "n_points": 6
+  },
+  "LiH": {
+    "hf_overlap_threshold": 0.9,
+    "threshold_R_bohr": 4.319726843251188,
+    "n_points": 6
+  }
+}

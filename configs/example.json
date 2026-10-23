@@ -1,0 +1,8 @@
+{
+  "overlap_threshold": 0.9,
+  "molecules": [
+    {"name": "H2", "symbols": ["H", "H"], "electrons": 2, "charge": 0, "distances_bohr": [1.0, 1.4, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0, 6.0]},
+    {"name": "HeH+", "symbols": ["He", "H"], "electrons": 2, "charge": 1, "distances_bohr": [1.0, 1.5, 2.0, 3.0, 4.0, 6.0]},
+    {"name": "LiH", "symbols": ["Li", "H"], "electrons": 4, "charge": 0, "distances_bohr": [2.0, 3.0, 4.0, 5.0, 6.0, 8.0]}
+  ]
+}

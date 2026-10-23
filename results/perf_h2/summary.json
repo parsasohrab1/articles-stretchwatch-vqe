@@ -1,0 +1,7 @@
+{
+  "H2_20pts": {
+    "hf_overlap_threshold": 0.9,
+    "threshold_R_bohr": 2.6438357818631326,
+    "n_points": 20
+  }
+}
