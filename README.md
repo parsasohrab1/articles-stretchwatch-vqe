@@ -1,89 +1,30 @@
-# articles-stretchwatch-vqe
-```markdown
-# aeticles-stretchwatch-vqe.md
+# StretchWatch – how good is the Hartree–Fock starting point for VQE along a bond-stretching curve?
 
-## SRS — استرچ‌واچ: کیفیت نقطه‌ی شروع VQE
+For H₂, HeH⁺ and LiH (STO-3G) it computes, at every bond length, the exact ground state (full CI, PySCF), the overlap |⟨HF|FCI⟩|², the entropy of the natural-orbital occupations,
+a **quality index** Q = |⟨HF|FCI⟩|² · exp(−S), finds the bond length beyond which HF stops being a good start, and recommends **HF or an alternative reference (CISD)**.
 
-### 1. Introduction
-- **Purpose:** تعریف ابزاری برای تحلیل کمی کیفیت حالت Hartree-Fock به‌عنوان نقطه‌ی شروع VQE در طول منحنی کشش پیوند مولکول‌های کوچک.
-- **Scope:** محاسبه‌ی هامیلتونی کیوبیتی برای H2، HeH+، LiH در فاصله‌های پیوند مختلف، محاسبه‌ی همپوشانی HF با حالت پایه و آنتروپی درهم‌تنیدگی.
-- **Definitions:** VQE، Hartree-Fock، bond stretching، overlap، entanglement entropy.
+**Maturity: TRL 4** (laboratory validation with exact classical calculations; no quantum hardware or circuit execution, as in [docs/SRS.md](docs/SRS.md)). See [docs/TRL.md](docs/TRL.md).
+Moving to TRL 5 needs real VQE runs (for example PennyLane) showing that the index predicts iteration counts or convergence failures, and larger molecules.
 
-### 2. Overall Description
-- **Product Functions:** تولید هامیلتونی در فاصله‌های مختلف، حل دقیق (full CI) برای مرجع، محاسبه‌ی همپوشانی HF و آنتروپی، رسم منحنی‌ها.
-- **User Characteristics:** پژوهشگر شیمی کوانتومی با دانش پایتون و PennyLane.
-- **Constraints:** محاسبات کلاسیک دقیق برای مولکول‌های کوچک؛ بدون سخت‌افزار کوانتومی.
-- **Assumptions:** هامیلتونی‌ها با پایه‌ی STO-3G و تبدیل Jordan-Wigner ساخته می‌شوند.
+## Pipeline
+| SRS | What it does | Where |
+|-----|--------------|-------|
+| FR-01 | Molecule geometry and STO-3G integrals (PySCF) | `chem.build` |
+| FR-02 | Exact ground state by full CI | `chem.analyse` |
+| FR-03 | Overlap of the HF determinant with the ground state | `chem.analyse` |
+| FR-04 | Natural-orbital entropy from the FCI one-body density matrix | `chem.analyse` |
+| FR-05 | Scan over bond lengths, CSV | `scan.scan`, `cli.py` |
+| FR-06 | Threshold distance (interpolated), HF/CISD recommendation, rank correlation of the index with the HF energy error | `scan.py` |
 
-### 3. Specific Requirements
-- **Functional:**
-  - FR-01: تعریف هندسه‌ی مولکول و تولید هامیلتونی با PennyLane/PySCF.
-  - FR-02: حل دقیق حالت پایه (full configuration interaction) برای مرجع.
-  - FR-03: ساخت حالت HF و محاسبه‌ی همپوشانی با حالت پایه.
-  - FR-04: محاسبه‌ی آنتروپی درهم‌تنیدگی اوربیتال‌های طبیعی.
-  - FR-05: تکرار برای آرایه‌ای از فاصله‌های پیوند و ذخیره‌ی نتایج در CSV.
-  - FR-06: تعیین آستانه‌ی فاصله‌ای که پس از آن HF نقطه‌ی شروع نامناسبی می‌شود.
-- **External Interfaces:** ورودی JSON با مشخصات مولکول و آرایه‌ی فاصله‌ها؛ خروجی CSV.
-- **Performance:** محاسبه برای H2 در ۲۰ فاصله در کمتر از ۱ دقیقه.
-- **Design Constraints:** پایتون، PennyLane، PySCF (اختیاری).
+```bash
+pip install -e ".[dev]"
+pytest -q
+stretchwatch run --molecule H2 --n 12 --out results
+stretchwatch run --config molecule.json            # {"molecule": "LiH", "distances": [1.0, 1.6, 2.5, 3.5]}
+```
 
-### 4. قابلیت ثبت اختراع و نوآوری پیشنهادی
-- **ارزیابی اولیه:** قابلیت ثبت اختراع **پایین**. Hartree-Fock به‌عنوان نقطه‌ی شروع VQE و رفتار آن در کشش پیوند در ادبیات و پتنت‌ها به‌طور گسترده پوشش داده شده است.
-- **نوآوری پیشنهادی برای SRS:** افزودن **«معیار کیفیت نقطه‌ی شروع»** به‌صورت یک شاخص ترکیبی از همپوشانی و آنتروپی، و استفاده از آن برای **پیشنهاد خودکار سوئیچ به یک حالت مرجع جایگزین** (مثلاً CISD) در فاصله‌های بزرگ. این یک مطالعه‌ی روش‌شناختی است و ادعای پتنت آن بسیار دشوار خواهد بود.
-- **اقدام لازم:** SRS را به‌عنوان یک **ابزار تحلیل و بنچمارک** ارائه دهید، نه یک محصول قابل ثبت.
-
----
-
-## پیوست: کد تولید داده مصنوعی
-
-```python
-#!/usr/bin/env python3
-"""تولید منحنی انرژی مصنوعی برای H2، HeH+، LiH (مدل مورس تقریبی)."""
-import numpy as np
-import pandas as pd
-import os
-
-def morse_energy(r, De, a, re):
-    """انرژی پتانسیل مورس."""
-    return De * (1 - np.exp(-a * (r - re))) ** 2 - De
-
-def generate_curve(molecule, r_min=0.3, r_max=4.0, n=40, seed=42):
-    rng = np.random.default_rng(seed)
-
-    # پارامترهای تقریبی هر مولکول (صرفاً برای داده مصنوعی)
-    params = {
-        "H2":   {"De": 4.75, "a": 1.94, "re": 0.74},
-        "HeH+": {"De": 2.50, "a": 1.50, "re": 0.77},
-        "LiH":  {"De": 2.50, "a": 0.80, "re": 1.60},
-    }[molecule]
-
-    r = np.linspace(r_min, r_max, n)
-    E_exact = morse_energy(r, params["De"], params["a"], params["re"])
-    E_exact += rng.normal(0, 1e-4, n)
-
-    # انرژی HF: در فاصله‌های کوچک نزدیک به دقیق، در فاصله‌های بزرگ واگرا
-    delta = r - params["re"]
-    E_hf = E_exact + 0.5 * delta**2 * np.exp(-delta) + rng.normal(0, 2e-4, n)
-
-    # همپوشانی HF با حالت پایه (کاهش با کشش)
-    overlap = np.exp(-0.3 * np.abs(delta) ** 1.5) + rng.normal(0, 0.01, n)
-    overlap = np.clip(overlap, 0, 1)
-
-    # آنتروپی درهم‌تنیدگی (افزایش با کشش)
-    entropy = 0.1 + 0.3 * (1 - np.exp(-0.5 * np.abs(delta))) + rng.normal(0, 0.01, n)
-
-    return pd.DataFrame({
-        "r": r,
-        "E_exact": E_exact,
-        "E_HF": E_hf,
-        "overlap": overlap,
-        "entropy": entropy,
-    })
-
-if __name__ == "__main__":
-    out_dir = "data/stretchwatch"
-    os.makedirs(out_dir, exist_ok=True)
-    for mol in ["H2", "HeH+", "LiH"]:
-        df = generate_curve(mol, seed=hash(mol) % 1000)
-        df.to_csv(f"{out_dir}/{mol}_curve.csv", index=False)
-    print(f"منحنی‌های کشش پیوند در {out_dir} تولید شد.")
+## Lab result (exact calculations; not a quantum-hardware claim)
+* H₂: HF energy −1.1168 Ha and FCI −1.1373 Ha at 0.74 Å (STO-3G), as in the literature. |⟨HF|FCI⟩|² falls from 0.99 to 0.50 at dissociation; entropy rises to 2 ln 2; HF stops being a good start (< 0.9) at 1.37 Å.
+* LiH: threshold at 2.31 Å. The quality index is perfectly rank-correlated with the HF energy error on the scans (Spearman −1.00).
+* HeH⁺ is a negative control: it dissociates into He + H⁺, HF stays exact and no threshold exists.
+* CISD is exact for the two-electron molecules and has overlap² ≥ 0.9999 for LiH in this tiny basis, so the CISD result says little about larger systems.
