@@ -1,7 +1,7 @@
 # Business Requirements Specification (BRS)
 
 **Product:** StretchWatch (articles-stretchwatch-vqe)
-*Reconstructed from the README, the requirements document, the TRL assessment and the tests of this repository. Not reviewed by the owner. A patent attorney must review before publication of method details.*
+*Reconstructed from the README, the requirements document, the TRL assessment and the tests of this repository. Not reviewed by the owner. Do not publish method details covered by filed claims.*
 
 ## 1. Business problem
 The Hartree-Fock state is the usual starting point of the variational quantum eigensolver (VQE), but it becomes a poor start as a bond is stretched. Users need to know where.
